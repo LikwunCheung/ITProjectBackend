@@ -15,6 +15,6 @@ RUN pip3 install -r requirements.txt
 
 COPY . /app/
 
-EXPOSE 8081
+EXPOSE 8080
 
-CMD ["python3", "manage.py", "runserver", "0:8081"]
+CMD ["python3", "manage.py", "runserver", "0:8080"]
