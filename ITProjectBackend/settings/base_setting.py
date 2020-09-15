@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
     'ITProjectBackend.account',
     'ITProjectBackend.tab',
+    'ITProjectBackend.api',
 ]
 
 MIDDLEWARE = [
