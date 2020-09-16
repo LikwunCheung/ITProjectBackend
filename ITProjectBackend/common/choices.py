@@ -33,6 +33,8 @@ class RespCode(MyEnum):
     invalid_operation = Choice(-6, 'invalid operation')
     permission_deny = Choice(-7, 'permission deny')
     incorrect_body = Choice(-8, 'incorrect body')
+    resend_email = Choice(-9, 'resend validation email')
+    expired = Choice(-10, 'expired')
 
 
 class UserStatus(MyEnum):
@@ -46,10 +48,3 @@ class UserStatus(MyEnum):
 class Status(MyEnum):
     invalid = Choice(0, 'invalid')
     valid = Choice(1, 'valid')
-
-
-class Delete(MyEnum):
-    non_delete = Choice(0, 'non delete')
-    deleted = Choice(1, 'deleted')
-
-

@@ -34,14 +34,13 @@ def init_http_response_my_enum(resp: MyEnum):
     return init_http_response(resp.key, resp.msg)
 
 
-def check_body():
+def check_body(func):
     """
 
     :param func:
     :return:
     """
     def wrapper(request, *args, **kwargs):
-
         try:
             body = dict(ujson.loads(request.body))
             logger.info(body)
@@ -54,7 +53,7 @@ def check_body():
     return wrapper
 
 
-def check_user_login():
+def check_user_login(func):
     """
     Disable for testing
     :param roles:

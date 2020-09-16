@@ -2,14 +2,14 @@
 
 from django.urls import path
 
-from ITProjectBackend.api.views.account import login, register
+from ITProjectBackend.api.views.account import login, register, validate
 
 
 urlpatterns = [
     path('login', login),
     path('register', register),
-    # path('validate',),
-    #
+    path('validate', validate),
+
     # path('profile',),
     #
     # path('tab/<id:int>/delete',),

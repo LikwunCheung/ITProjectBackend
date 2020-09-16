@@ -9,7 +9,6 @@ class TabPage(models.Model):
     title = models.CharField(max_length=256, blank=False, null=False)
     content = models.TextField(max_length=65535)
     status = models.IntegerField(blank=False, null=False)
-    is_delete = models.IntegerField(blank=False, null=False)
     create_date = models.BigIntegerField(blank=False, null=False)
     update_date = models.BigIntegerField(blank=False, null=False)
 

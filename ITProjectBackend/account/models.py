@@ -13,7 +13,6 @@ class User(models.Model):
     last_name = models.CharField(max_length=64, blank=False, null=False)
     theme = models.CharField(max_length=32)
     status = models.IntegerField(blank=False, null=False)
-    is_delete = models.IntegerField(blank=False, null=False)
     create_date = models.BigIntegerField(blank=False, null=False)
     update_date = models.BigIntegerField(blank=False, null=False)
 
@@ -32,7 +31,6 @@ class RegisterRecord(models.Model):
     code = models.CharField(max_length=256, blank=False, null=False)
     expired = models.BigIntegerField(blank=False, null=False)
     status = models.IntegerField(blank=False, null=False)
-    is_delete = models.IntegerField(blank=False, null=False)
     create_date = models.BigIntegerField(blank=False, null=False)
     update_date = models.BigIntegerField(blank=False, null=False)
 

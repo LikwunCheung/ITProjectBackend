@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import socks
 import threading
 
 from queue import Queue
 from smtplib import SMTP
 from email.mime.text import MIMEText
 from email.header import Header
+
+from django.db.models import ObjectDoesNotExist
+from django.db.transaction import atomic
 
 from ITProjectBackend.common.utils import mills_timestamp
 from ITProjectBackend.common.choices import UserStatus, Status
@@ -39,18 +41,18 @@ def init_smtp():
         logger.error('[SMTP] Connect Fail: ', e)
 
 
-def send_email(sender, address, content):
+def send_email(address, content):
     global connected, connector
 
     if not connected or not isinstance(connector, SMTP):
         return False
 
     try:
-        logger.info(u'[SMTP] Sending Email: %s %s %s' % (sender, address, content))
+        logger.info(u'[SMTP] Sending Email: %s %s' % (address, content))
 
         message = MIMEText(content, PLAIN, UTF8)
-        message[FROM] = Header(sender, UTF8)
-        message[SENDER] = Header(sender, UTF8)
+        message[FROM] = Header(INVITATION_SENDER, UTF8)
+        message[SENDER] = Header(INVITATION_SENDER, UTF8)
         message[TO] = Header(address, UTF8)
         message[SUBJECT] = Header(INVITATION_TITLE, UTF8)
 
@@ -70,12 +72,12 @@ class SendEmailPool(threading.Thread):
         self.pool = Queue(self.size)
         threading.Thread.__init__(self)
 
-    def put_task(self, id, coordinator, address, content):
-        logger.info(u'[SMTP] Receive: %d %s %s' % (id, address, content))
+    def put_task(self, user_id, record_id, address, content):
+        logger.info(u'[SMTP] Receive: %d %d %s %s' % (user_id, record_id, address, content))
 
         self.pool.put(dict(
-            id=id,
-            coordinator=coordinator,
+            user_id=user_id,
+            record_id=record_id,
             email=address,
             text=content,
         ))
@@ -84,16 +86,27 @@ class SendEmailPool(threading.Thread):
         task = self.pool.get(block=True, timeout=None)
 
         logger.info(u'[SMTP] Send Email: %d %s' % (self.count, str(task)))
-        invite = Invitation.objects.get(invitation_id=task['id'], status=InvitationStatus.waiting.value.key)
-        user = User.objects.get(user_id=task['id'])
-
-        if invite is None or invite.expired <= mills_timestamp():
+        try:
+            record = RegisterRecord.objects.get(record_id=task['record_id'], status=Status.valid.key)
+            user = User.objects.get(user_id=task['user_id'], status__lt=UserStatus.valid.key)
+        except ObjectDoesNotExist as e:
+            logger.info('[SMTP] %s' % e)
             return
 
-        if send_email(task['coordinator'], task['email'], task['text']):
-            invite.status = InvitationStatus.sent.value.key
-            invite.send_date = mills_timestamp()
-            invite.save()
+        if record.expired <= mills_timestamp():
+            timestamp = mills_timestamp()
+            with atomic():
+                user.status = UserStatus.expired.key
+                user.update_date = timestamp
+                record.status = Status.invalid.key
+                record.status = timestamp
+                user.save()
+                record.save()
+
+        if send_email(task['email'], task['text']):
+            user.status = UserStatus.wait_accept.key
+            user.update_date = mills_timestamp()
+            user.save()
         else:
             self.pool.put(task)
 
