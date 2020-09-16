@@ -25,3 +25,8 @@ GMAIL_ACCOUNT = 'swen90013.2020.sp@gmail.com'
 GMAIL_PASSWORD = 'fvwdissshcpobsdl'
 
 INVITATION_TITLE = '[eProfolio]Email Address Validation'
+INVITATION_EXPIRED = 1000 * 60 * 1
+
+DEFAULT_AVATAR = ''
+DEFAULT_THEME = ''
+

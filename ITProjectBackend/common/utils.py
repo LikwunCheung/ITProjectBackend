@@ -6,13 +6,10 @@ import ujson
 import time
 import re
 
-from functools import wraps
-
 from django.http.response import HttpResponse
 
-from ITProjectBackend.common.choices import RespCode
+from ITProjectBackend.common.choices import MyEnum, RespCode
 from ITProjectBackend.common.config import SESSION_REFRESH, HOMEPAGE, REGISTER_PAGE, INVITATION_KEY, SALT
-
 
 logger = logging.getLogger('django')
 
@@ -33,6 +30,10 @@ def init_http_response(code, message):
     )
 
 
+def init_http_response_my_enum(resp: MyEnum):
+    return init_http_response(resp.key, resp.msg)
+
+
 def check_body(func):
     """
 
@@ -46,7 +47,7 @@ def check_body(func):
             logger.info(body)
         except ValueError or json.JSONDecodeError as e:
             logger.info(request.body)
-            resp = init_http_response(RespCode.incorrect_body.value.key, RespCode.incorrect_body.value.msg)
+            resp = init_http_response_my_enum(RespCode.incorrect_body)
             return make_json_response(HttpResponse, resp)
 
         return func(request, body, *args, **kwargs)
@@ -62,7 +63,7 @@ def check_user_login():
     def wrapper(request, *args, **kwargs):
         user = request.session.get('user', {})
         if not user or 'id' not in user or 'is_login' not in user:
-            resp = init_http_response(RespCode.need_login.value.key, RespCode.need_login.value.msg)
+            resp = init_http_response_my_enum(RespCode.need_login)
             return make_json_response(HttpResponse, resp)
 
         request.session.set_expiry(SESSION_REFRESH)

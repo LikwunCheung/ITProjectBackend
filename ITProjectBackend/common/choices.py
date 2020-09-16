@@ -43,4 +43,13 @@ class UserStatus(MyEnum):
     invalid = Choice(5, 'invalid')
 
 
+class Status(MyEnum):
+    invalid = Choice(0, 'invalid')
+    valid = Choice(1, 'valid')
+
+
+class Delete(MyEnum):
+    non_delete = Choice(0, 'non delete')
+    deleted = Choice(1, 'deleted')
+
 
