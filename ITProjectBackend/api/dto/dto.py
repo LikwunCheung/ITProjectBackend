@@ -3,6 +3,7 @@
 import hashlib
 
 from ITProjectBackend.common.config import SALT
+from ITProjectBackend.common.utils import email_validate
 
 
 class LoginDTO(object):
@@ -18,6 +19,10 @@ class LoginDTO(object):
     @property
     def is_empty(self):
         return not self.email or not self.password
+
+    @property
+    def invalid_email(self):
+        return not email_validate(self.email)
 
 
 class RegisterDTO(object):
@@ -35,3 +40,7 @@ class RegisterDTO(object):
     @property
     def is_empty(self):
         return not self.email or not self.password or not self.first_name or not self.last_name
+
+    @property
+    def invalid_email(self):
+        return not email_validate(self.email)

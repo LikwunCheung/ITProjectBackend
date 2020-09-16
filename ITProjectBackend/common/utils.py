@@ -34,7 +34,7 @@ def init_http_response_my_enum(resp: MyEnum):
     return init_http_response(resp.key, resp.msg)
 
 
-def check_body(func):
+def check_body():
     """
 
     :param func:

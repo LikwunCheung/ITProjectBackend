@@ -35,7 +35,7 @@ def login(request, body, *args, **kwargs):
     login_dto = LoginDTO()
     body_extract(body, login_dto)
 
-    if login_dto.is_empty:
+    if login_dto.is_empty or login_dto.invalid_email:
         resp = init_http_response_my_enum(RespCode.invalid_parameter)
         return make_json_response(HttpResponse, resp)
 
@@ -80,7 +80,7 @@ def register(request, body, *args, **kwargs):
     body_extract(body, register_dto)
     timestamp = mills_timestamp()
 
-    if register_dto.is_empty:
+    if register_dto.is_empty or register_dto.invalid_email:
         resp = init_http_response_my_enum(RespCode.invalid_parameter)
         return make_json_response(HttpResponse, resp)
 
