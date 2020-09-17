@@ -35,7 +35,7 @@ def multi_get_tab(request, *args, **kwargs):
 
     user_id = request.session.get('user').get('id')
 
-    tabs = TabPage.objects.filter(user_id=user_id, status=Status.valid.key).order_by('create_date')
+    tabs = TabPage.objects.filter(user_id=user_id, status=Status.valid.key).order_by('-create_date')
     tabs = [dict(
         tab_id=t.tab_id,
         title=t.title,
