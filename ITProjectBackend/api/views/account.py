@@ -66,6 +66,23 @@ def login(request, body, *args, **kwargs):
 
 
 @require_http_methods(['POST'])
+@check_user_login
+def logout(request, *args, **kwargs):
+    """
+    Logout
+
+    :param request:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+
+    request.session.flush()
+    resp = init_http_response_my_enum(RespCode.success)
+    return make_json_response(HttpResponse, resp)
+
+
+@require_http_methods(['POST'])
 @check_body
 def register(request, body, *args, **kwargs):
     """

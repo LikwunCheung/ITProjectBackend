@@ -13,7 +13,7 @@ SENDER = 'Sender'
 SUBJECT = 'Subject'
 
 HOMEPAGE = 'http://localhost:3000'
-REGISTER_PAGE = '/RegisterPage'
+REGISTER_PAGE = '/validate'
 INVITATION_KEY = 'code'
 
 PATTERN_FULLNAME = '<FULLNAME>'
