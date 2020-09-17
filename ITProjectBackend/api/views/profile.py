@@ -68,7 +68,7 @@ def update_profile(request, body, *args, **kwargs):
     if update_profile_dto.avatar:
         user.avatar_url = update_profile_dto.avatar
     if update_profile_dto.theme:
-        user.last_name = update_profile_dto.theme
+        user.theme = update_profile_dto.theme
     if update_profile_dto.password:
         user.password = update_profile_dto.password_md5
     user.update_date = timestamp
