@@ -26,12 +26,12 @@ GMAIL_PASSWORD = 'fvwdissshcpobsdl'
 
 INVITATION_TEMPLATE = 'Dear <FULLNAME>,\n\n' \
                       'Welcome to join ePortfolio platform!\n' \
-                      'Please click the following validation link to accept invitation within 15 minutes!\n' \
+                      'Please click the following verification link to accept invitation within 15 minutes!\n' \
                       '<URL>\n\n' \
                       'Regards,\n' \
                       'ePortfolio Support Team\n'
 INVITATION_SENDER = 'ePortfolio'
-INVITATION_TITLE = '[ePortfolio]Email Address Validation'
+INVITATION_TITLE = '[ePortfolio] Verify Your Email Address'
 INVITATION_EXPIRED = 1000 * 60 * 15
 
 DEFAULT_AVATAR = ''

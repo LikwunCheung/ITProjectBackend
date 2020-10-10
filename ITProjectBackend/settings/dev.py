@@ -2,6 +2,8 @@ from .base_setting import *
 
 DEBUG = True
 
+FILE_PATH = '/Users/likwuncheung/repos/file'
+
 ALLOWED_HOSTS = ['*']
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'

@@ -8,6 +8,7 @@ RUN apt-get update
 RUN apt-get -y upgrade
 RUN apt-get install -y default-mysql-client
 RUN mkdir /app
+RUN mkdir /app/file
 WORKDIR /app/
 
 COPY requirements.txt /app

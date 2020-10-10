@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import random
-import string
 
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
@@ -11,7 +9,7 @@ from django.db import transaction
 
 from ITProjectBackend.common import smtp_thread
 from ITProjectBackend.common.utils import check_user_login, check_body, body_extract, mills_timestamp, \
-    init_http_response_my_enum, make_json_response, get_invitation_link
+    init_http_response_my_enum, make_json_response, get_invitation_link, get_validate_code
 from ITProjectBackend.common.choices import RespCode, UserStatus, Status
 from ITProjectBackend.api.dto.dto import LoginDTO, RegisterDTO
 from ITProjectBackend.account.models import User, RegisterRecord
@@ -136,7 +134,7 @@ def register(request, body, *args, **kwargs):
             return make_json_response(HttpResponse, resp)
 
     expired = timestamp + INVITATION_EXPIRED  # 1min
-    code = ''.join([''.join(random.sample(string.ascii_letters + string.digits, 8)) for i in range(4)])
+    code = get_validate_code()
 
     try:
         with transaction.atomic():

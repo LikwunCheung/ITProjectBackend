@@ -35,6 +35,7 @@ class RespCode(MyEnum):
     incorrect_body = Choice(-8, 'incorrect body')
     resend_email = Choice(-9, 'resend validation email')
     expired = Choice(-10, 'expired')
+    invalid_file = Choice(-11, 'invalid file id')
 
 
 class UserStatus(MyEnum):

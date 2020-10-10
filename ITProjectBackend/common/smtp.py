@@ -27,7 +27,7 @@ def init_smtp():
     try:
         try:
             logger.info(u'[SMTP] Connecting Google SMTP Service: ' + GMAIL_ADDRESS + ':' + str(GMAIL_PORT))
-            connector = SMTP(host=GMAIL_ADDRESS, port=GMAIL_PORT, timeout=10)
+            connector = SMTP(host=GMAIL_ADDRESS, port=GMAIL_PORT, timeout=3)
             connector.ehlo()
             connector.starttls()
             connector.login(GMAIL_ACCOUNT, GMAIL_PASSWORD)
