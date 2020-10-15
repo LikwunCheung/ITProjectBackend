@@ -9,7 +9,7 @@ from django.db import transaction
 
 from ITProjectBackend.common import smtp_thread
 from ITProjectBackend.common.utils import check_user_login, check_body, body_extract, mills_timestamp, \
-    init_http_response_my_enum, make_json_response, get_invitation_link, get_validate_code
+    init_http_response_my_enum, make_json_response, get_invitation_link, get_validate_code, get_forget_link
 from ITProjectBackend.common.choices import RespCode, UserStatus, Status, SendEmailAction
 from ITProjectBackend.api.dto.dto import LoginDTO, RegisterDTO, ResetPasswordDTO
 from ITProjectBackend.account.models import User, RegisterRecord, ForgetPassword
@@ -224,7 +224,7 @@ def forget_password(request, body, *args, **kwargs):
     forget.save()
 
     content = str(FORGET_TEMPLATE).replace(PATTERN_FULLNAME, user.full_name)\
-        .replace(PATTERN_URL, get_invitation_link(forget.code))
+        .replace(PATTERN_URL, get_forget_link(forget.code))
     smtp_thread.put_task(SendEmailAction.forget.value, user.user_id, forget.record_id, user.email, content)
 
     resp = init_http_response_my_enum(RespCode.success)

@@ -11,7 +11,7 @@ import re
 from django.http.response import HttpResponse
 
 from ITProjectBackend.common.choices import MyEnum, RespCode
-from ITProjectBackend.common.config import SESSION_REFRESH, HOMEPAGE, REGISTER_PAGE, INVITATION_KEY, SALT
+from ITProjectBackend.common.config import SESSION_REFRESH, HOMEPAGE, REGISTER_PAGE, INVITATION_KEY, FORGET_PAGE
 
 logger = logging.getLogger('django')
 
@@ -98,6 +98,10 @@ def email_validate(email):
 
 def get_invitation_link(key):
     return HOMEPAGE + REGISTER_PAGE + '?' + INVITATION_KEY + '=' + key
+
+
+def get_forget_link(key):
+    return HOMEPAGE + FORGET_PAGE + '?' + INVITATION_KEY + '=' + key
 
 
 def get_validate_code(length: int = 4):
