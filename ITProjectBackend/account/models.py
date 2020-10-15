@@ -36,3 +36,18 @@ class RegisterRecord(models.Model):
 
     class Meta:
         db_table = 'register_record'
+
+
+class ForgetPassword(models.Model):
+
+    record_id = models.AutoField(db_column='id', primary_key=True)
+    user_id = models.IntegerField(blank=False, null=False, db_index=True)
+    code = models.CharField(max_length=6, blank=False, null=False)
+    expired = models.BigIntegerField(blank=False, null=False)
+
+    status = models.IntegerField(blank=False, null=False)
+    create_date = models.BigIntegerField(blank=False, null=False)
+    update_date = models.BigIntegerField(blank=False, null=False)
+
+    class Meta:
+        db_table = 'forget_password'

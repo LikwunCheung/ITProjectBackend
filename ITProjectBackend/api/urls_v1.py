@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from .views.account import login, register, validate
+from .views.account import login, register, validate, forget_password, forget_validate
 from .views.profile import profile_router
 from .views.tab import tab_router, delete_tab
 from .views.file import file_router
@@ -12,6 +12,8 @@ urlpatterns = [
     path('login', login),
     path('register', register),
     path('validate', validate),
+    path('forget', forget_password),
+    path('forget/validate', forget_validate),
 
     path('profile', profile_router),
 

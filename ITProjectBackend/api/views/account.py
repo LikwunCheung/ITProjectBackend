@@ -10,11 +10,11 @@ from django.db import transaction
 from ITProjectBackend.common import smtp_thread
 from ITProjectBackend.common.utils import check_user_login, check_body, body_extract, mills_timestamp, \
     init_http_response_my_enum, make_json_response, get_invitation_link, get_validate_code
-from ITProjectBackend.common.choices import RespCode, UserStatus, Status
-from ITProjectBackend.api.dto.dto import LoginDTO, RegisterDTO
-from ITProjectBackend.account.models import User, RegisterRecord
+from ITProjectBackend.common.choices import RespCode, UserStatus, Status, SendEmailAction
+from ITProjectBackend.api.dto.dto import LoginDTO, RegisterDTO, ResetPasswordDTO
+from ITProjectBackend.account.models import User, RegisterRecord, ForgetPassword
 from ITProjectBackend.common.config import DEFAULT_AVATAR, DEFAULT_THEME, INVITATION_EXPIRED, INVITATION_TEMPLATE, \
-    PATTERN_FULLNAME, PATTERN_URL
+    PATTERN_FULLNAME, PATTERN_URL, FORGET_EXPIRED, FORGET_TEMPLATE
 
 logger = logging.getLogger('django')
 
@@ -129,7 +129,8 @@ def register(request, body, *args, **kwargs):
                 logger.info('Resend Validation Email: %s' % existed_user)
                 content = str(INVITATION_TEMPLATE).replace(PATTERN_FULLNAME, existed_user.full_name) \
                     .replace(PATTERN_URL, get_invitation_link(existed_record.code))
-                smtp_thread.put_task(existed_user.user_id, existed_record.record_id, existed_user.email, content)
+                smtp_thread.put_task(SendEmailAction.register.value, existed_user.user_id, existed_record.record_id,
+                                     existed_user.email, content)
             resp = init_http_response_my_enum(RespCode.resend_email)
             return make_json_response(HttpResponse, resp)
 
@@ -153,7 +154,7 @@ def register(request, body, *args, **kwargs):
 
     content = str(INVITATION_TEMPLATE).replace(PATTERN_FULLNAME, user.full_name) \
         .replace(PATTERN_URL, get_invitation_link(record.code))
-    smtp_thread.put_task(user.user_id, record.record_id, user.email, content)
+    smtp_thread.put_task(SendEmailAction.register.value, user.user_id, record.record_id, user.email, content)
 
     resp = init_http_response_my_enum(RespCode.success)
     return make_json_response(HttpResponse, resp)
@@ -197,3 +198,76 @@ def validate(request, body, *args, **kwargs):
 
     resp = init_http_response_my_enum(RespCode.success)
     return make_json_response(HttpResponse, resp)
+
+
+@require_http_methods(['POST'])
+@check_body
+def forget_password(request, body, *args, **kwargs):
+
+    try:
+        email = body['email']
+        user = User.objects.get(email=email, status=UserStatus.valid.key)
+    except Exception as e:
+        resp = init_http_response_my_enum(RespCode.invalid_parameter)
+        return make_json_response(resp=resp)
+
+    existed_forget = ForgetPassword.objects.filter(user_id=user.user_id, status=Status.valid.key).first()
+    if existed_forget:
+        existed_forget.status = Status.invalid.key
+        existed_forget.save()
+
+    code = get_validate_code()
+    timestamp = mills_timestamp()
+    expired = timestamp + FORGET_EXPIRED
+    forget = ForgetPassword(user_id=user.user_id, code=code, expired=expired, status=Status.valid.key,
+                            create_date=timestamp, update_date=timestamp)
+    forget.save()
+
+    content = str(FORGET_TEMPLATE).replace(PATTERN_FULLNAME, user.full_name)\
+        .replace(PATTERN_URL, get_invitation_link(forget.code))
+    smtp_thread.put_task(SendEmailAction.forget.value, user.user_id, forget.record_id, user.email, content)
+
+    resp = init_http_response_my_enum(RespCode.success)
+    return make_json_response(resp=resp)
+
+
+@require_http_methods(['POST'])
+@check_body
+def forget_validate(request, body, *args, **kwargs):
+
+    reset_dto = ResetPasswordDTO()
+    body_extract(body, reset_dto)
+
+    if reset_dto.is_empty:
+        resp = init_http_response_my_enum(RespCode.invalid_parameter)
+        return make_json_response(resp=resp)
+
+    timestamp = mills_timestamp()
+
+    try:
+        record = ForgetPassword.objects.get(code=reset_dto.code, status=Status.valid.key)
+        user = User.objects.get(user_id=record.user_id, status=UserStatus.valid.key)
+
+        if record.expired <= timestamp:
+            with transaction.atomic():
+                record.status = Status.invalid.key
+                record.update_date = timestamp
+                record.save()
+
+            resp = init_http_response_my_enum(RespCode.expired)
+            return make_json_response(resp=resp)
+
+        with transaction.atomic():
+            user.password = reset_dto.password_md5
+            user.save()
+            record.status = Status.invalid.key
+            record.update_date = timestamp
+            record.save()
+
+    except ObjectDoesNotExist as e:
+        logger.info('Validate Error: %s' % e)
+        resp = init_http_response_my_enum(RespCode.validate_fail)
+        return make_json_response(resp=resp)
+
+    resp = init_http_response_my_enum(RespCode.success)
+    return make_json_response(resp=resp)

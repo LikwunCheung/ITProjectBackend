@@ -12,9 +12,9 @@ from django.db.models import ObjectDoesNotExist
 from django.db.transaction import atomic
 
 from ITProjectBackend.common.utils import mills_timestamp
-from ITProjectBackend.common.choices import UserStatus, Status
+from ITProjectBackend.common.choices import UserStatus, Status, SendEmailAction
 from ITProjectBackend.common.config import *
-from ITProjectBackend.account.models import RegisterRecord, User
+from ITProjectBackend.account.models import RegisterRecord, User, ForgetPassword
 
 logger = logging.getLogger('django')
 connector = None
@@ -41,7 +41,7 @@ def init_smtp():
         logger.error('[SMTP] Connect Fail: ', e)
 
 
-def send_email(address, content):
+def send_email(title: str, address: str, content: str):
     global connected, connector
 
     if not connected or not isinstance(connector, SMTP):
@@ -54,8 +54,9 @@ def send_email(address, content):
         message[FROM] = Header(INVITATION_SENDER, UTF8)
         message[SENDER] = Header(INVITATION_SENDER, UTF8)
         message[TO] = Header(address, UTF8)
-        message[SUBJECT] = Header(INVITATION_TITLE, UTF8)
+        message[SUBJECT] = Header(title, UTF8)
 
+        connector.login(GMAIL_ACCOUNT, GMAIL_PASSWORD)
         connector.sendmail(GMAIL_ACCOUNT, address, message.as_string())
         return True
     except Exception as e:
@@ -70,45 +71,68 @@ class SendEmailPool(threading.Thread):
         self.count = 0
         self.size = size
         self.pool = Queue(self.size)
-        threading.Thread.__init__(self)
+        super(SendEmailPool, self).__init__()
 
-    def put_task(self, user_id, record_id, address, content):
-        logger.info(u'[SMTP] Receive: %d %d %s %s' % (user_id, record_id, address, content))
+    def put_task(self, action, user_id, record_id, address, content):
+        logger.info(u'[SMTP] Receive: %d %d %d %s %s' % (action, user_id, record_id, address, content))
 
         self.pool.put(dict(
+            action=action,
             user_id=user_id,
             record_id=record_id,
             email=address,
-            text=content,
+            content=content,
         ))
 
     def consume(self):
         task = self.pool.get(block=True, timeout=None)
+        action = SendEmailAction(task['action'])
 
-        logger.info(u'[SMTP] Send Email: %d %s' % (self.count, str(task)))
-        try:
-            record = RegisterRecord.objects.get(record_id=task['record_id'], status=Status.valid.key)
-            user = User.objects.get(user_id=task['user_id'], status__lt=UserStatus.valid.key)
-        except ObjectDoesNotExist as e:
-            logger.info('[SMTP] %s' % e)
-            return
+        if action == SendEmailAction.register:
 
-        if record.expired <= mills_timestamp():
-            timestamp = mills_timestamp()
-            with atomic():
-                user.status = UserStatus.expired.key
-                user.update_date = timestamp
-                record.status = Status.invalid.key
-                record.status = timestamp
+            logger.info(u'[SMTP] Send Register Email: %d %s' % (self.count, str(task)))
+            try:
+                record = RegisterRecord.objects.get(record_id=task['record_id'], status=Status.valid.key)
+                user = User.objects.get(user_id=task['user_id'], status__lt=UserStatus.valid.key)
+            except ObjectDoesNotExist as e:
+                logger.info('[SMTP] %s' % e)
+                return
+
+            if record.expired <= mills_timestamp():
+                timestamp = mills_timestamp()
+                with atomic():
+                    user.status = UserStatus.expired.key
+                    user.update_date = timestamp
+                    record.status = Status.invalid.key
+                    record.update_date = timestamp
+                    user.save()
+                    record.save()
+                return
+
+            if send_email(INVITATION_TITLE, task['email'], task['content']):
+                user.status = UserStatus.wait_accept.key
+                user.update_date = mills_timestamp()
                 user.save()
-                record.save()
+            else:
+                self.pool.put(task)
 
-        if send_email(task['email'], task['text']):
-            user.status = UserStatus.wait_accept.key
-            user.update_date = mills_timestamp()
-            user.save()
-        else:
-            self.pool.put(task)
+        elif action == SendEmailAction.forget:
+
+            logger.info(u'[SMTP] Send Forget Email: %d %s' % (self.count, str(task)))
+            try:
+                record = ForgetPassword.objects.get(record_id=task['record_id'], status=Status.valid.key)
+            except ObjectDoesNotExist as e:
+                logger.info('[SMTP] %s' % e)
+                return
+
+            if record.expired <= mills_timestamp():
+                record.status = Status.invalid.key
+                record.update_date = mills_timestamp()
+                record.save()
+                return
+
+            if not send_email(FORGET_TITLE, task['email'], task['content']):
+                self.pool.put(task)
 
     def run(self):
         while True:

@@ -70,3 +70,18 @@ class TabDTO(object):
     def is_empty(self):
         return not self.title or not self.content
 
+
+class ResetPasswordDTO(object):
+
+    def __init__(self):
+        self.code = None
+        self.password = None
+
+    @property
+    def is_empty(self):
+        return not self.code or not self.password
+
+    @property
+    def password_md5(self):
+        return hashlib.sha3_256((self.password + SALT).encode()).hexdigest()
+

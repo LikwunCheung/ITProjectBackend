@@ -49,3 +49,8 @@ class UserStatus(MyEnum):
 class Status(MyEnum):
     invalid = Choice(0, 'invalid')
     valid = Choice(1, 'valid')
+
+
+class SendEmailAction(Enum):
+    register = 0
+    forget = 1

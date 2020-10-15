@@ -14,6 +14,7 @@ SUBJECT = 'Subject'
 
 HOMEPAGE = 'http://localhost:8080'
 REGISTER_PAGE = '/validate'
+FORGET_PAGE = '/forget/validate'
 INVITATION_KEY = 'code'
 
 PATTERN_FULLNAME = '<FULLNAME>'
@@ -33,6 +34,15 @@ INVITATION_TEMPLATE = 'Dear <FULLNAME>,\n\n' \
 INVITATION_SENDER = 'ePortfolio'
 INVITATION_TITLE = '[ePortfolio] Verify Your Email Address'
 INVITATION_EXPIRED = 1000 * 60 * 15
+
+FORGET_TEMPLATE = 'Dear <FULLNAME>,\n\n' \
+                      'You are trying to reset your password!\n' \
+                      'Please click the following verification link to reset you password in 5 minutes!\n' \
+                      '<URL>\n\n' \
+                      'Regards,\n' \
+                      'ePortfolio Support Team\n'
+FORGET_TITLE = '[ePortfolio] Reset Your Password'
+FORGET_EXPIRED = 1000 * 60 * 5
 
 DEFAULT_AVATAR = ''
 DEFAULT_THEME = ''
