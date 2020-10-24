@@ -12,7 +12,7 @@ TO = 'To'
 SENDER = 'Sender'
 SUBJECT = 'Subject'
 
-HOMEPAGE = 'http://localhost:8080'
+HOMEPAGE = 'http://8.210.28.169:8885'
 REGISTER_PAGE = '/validate'
 FORGET_PAGE = '/forget/validate'
 INVITATION_KEY = 'code'
