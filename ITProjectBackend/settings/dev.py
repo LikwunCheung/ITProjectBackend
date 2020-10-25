@@ -18,9 +18,14 @@ DATABASES = {
         'PASSWORD': 'itproject',
         'HOST': '8.210.28.169',
         'PORT': 8888,
-        'CHARSET': 'utf8mb4'
+        'CHARSET': 'utf8mb4',
+        'TEST': {
+            'NAME': 'autotest',
+        }
     }
 }
+
+
 
 LOGGING = {
     'version': 1,
