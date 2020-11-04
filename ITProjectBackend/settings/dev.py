@@ -17,7 +17,7 @@ DATABASES = {
         'USER': 'itproject',
         'PASSWORD': 'itproject',
         'HOST': '8.210.28.169',
-        'PORT': 8888,
+        'PORT': 8890,
         'CHARSET': 'utf8mb4',
         'TEST': {
             'NAME': 'autotest',
