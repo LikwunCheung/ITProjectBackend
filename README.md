@@ -1,6 +1,6 @@
 # Django Backend Of COMP30022 IT Project
 
-#*Must Run With Linux/MacOS*
+***Must Run With Linux/MacOS***
 
 ## Run directly:
 1. pip3 install -r requirement.txt
